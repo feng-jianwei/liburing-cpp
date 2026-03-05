@@ -1,0 +1,5 @@
+.cache
+.ccache
+.history/
+build/
+third_party/

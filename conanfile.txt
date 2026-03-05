@@ -1,0 +1,15 @@
+[requires]
+gtest/1.17.0
+benchmark/1.9.4
+liburing/2.13
+magic_enum/0.9.5
+
+[options]
+*:shared=True
+
+[generators]
+CMakeDeps
+CMakeToolchain
+
+[layout]
+cmake_layout
