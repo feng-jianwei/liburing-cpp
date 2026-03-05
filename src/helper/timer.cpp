@@ -1,4 +1,5 @@
 #include <sys/timerfd.h>
+#include <csignal>
 #include "service/helper/timer.h"
 
 Timer::Timer(time_t seconds, time_t ns)

@@ -6,7 +6,7 @@ find_package(liburing REQUIRED)
 find_package(magic_enum REQUIRED)
 target_include_directories(liburing-cpp 
     PRIVATE 
-    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/include/liburing-cpp
     )
 
 target_link_libraries(liburing-cpp 

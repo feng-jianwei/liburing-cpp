@@ -51,8 +51,9 @@ ConstructorInitializerAllOnOneLineOrOnePerLine: true  # 构造函数初始化列
 AlignAfterOpenBracket: Align  # 对齐方式（例如参数列表）
 
 # Include 格式化
+SortIncludes:    true
 IncludeBlocks: Regroup
-IncludeIsMainRegex: '([.]cc|[.]h)$'  # 指定主源文件格式
+IncludeIsMainRegex: ''
 
 # 强制将空行保留在一些结构之间
 KeepEmptyLinesAtTheStartOfBlocks: false  # 不保留块起始位置的空行

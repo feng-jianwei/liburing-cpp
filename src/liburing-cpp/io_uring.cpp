@@ -1,3 +1,5 @@
+#include "io_uring.h"
+
 #include <liburing.h>
 #include <liburing/io_uring.h>
 #include <sys/mman.h>
@@ -6,19 +8,18 @@
 #include <new>
 #include <system_error>
 
-#include "liburing-cpp/io_uring.h"
-
 alignas(std::hardware_constructive_interference_size) std::atomic<unsigned int> ringfd(0);
 
 IoUring::IoUring(unsigned int entries)
 {
+    ring_ = new io_uring{};
     struct io_uring_params p{};
 
     if (!ringfd.compare_exchange_strong(p.wq_fd, 0, std::memory_order::relaxed, std::memory_order::relaxed)) {
         p.flags |= IORING_SETUP_ATTACH_WQ;
     }
-    int ret = io_uring_queue_init_params(entries, &ring_, &p);
-    ringfd.store(ring_.ring_fd, std::memory_order_relaxed);
+    int ret = io_uring_queue_init_params(entries, ring_, &p);
+    ringfd.store(ring_->ring_fd, std::memory_order_relaxed);
     if (ret < 0) {
         const char* what = "io_uring_queue_init() failed";
         throw std::system_error(-ret, std::generic_category(), what);
@@ -28,10 +29,10 @@ IoUring::IoUring(unsigned int entries)
 bool IoUring::SetupRingBuffer(gid bgid, unsigned int bufSize, unsigned int bufferCount)
 {
     if (gidToBuffer.contains(bgid)) {
-        return false;
+        return true;
     }
     auto ret = 0;
-    auto br = io_uring_setup_buf_ring(&ring_, bufferCount, bgid, 0, &ret);
+    auto br = io_uring_setup_buf_ring(ring_, bufferCount, bgid, 0, &ret);
     if (ret || br == nullptr) {
         return false;
     }
@@ -50,15 +51,17 @@ bool IoUring::SetupRingBuffer(gid bgid, unsigned int bufSize, unsigned int buffe
 IoUring::~IoUring()
 {
     for (auto& [bgid, br] : gidToBuffer) {
-        io_uring_free_buf_ring(&ring_, br.addr_, br.count_, bgid);
+        io_uring_free_buf_ring(ring_, br.addr_, br.count_, bgid);
         munmap(br.addr_, br.bufferSize_ * br.count_);
     }
-    io_uring_queue_exit(&ring_);
+    io_uring_queue_exit(ring_);
+    delete ring_;
+    ring_ = nullptr;
 }
 
 IoUringSqe IoUring::GetSqe()
 {
-    io_uring_sqe* sqe = io_uring_get_sqe(&ring_);
+    io_uring_sqe* sqe = io_uring_get_sqe(ring_);
     if (sqe == nullptr) {
         throw std::runtime_error("io_uring_get_sqe() returned nullptr");
     }
@@ -68,7 +71,7 @@ IoUringSqe IoUring::GetSqe()
 
 void IoUring::Submit()
 {
-    int ret = io_uring_submit(&ring_);
+    int ret = io_uring_submit(ring_);
 
     if (ret < 0) {
         const char* what = "io_uring_submit() failed";
@@ -79,7 +82,7 @@ void IoUring::Submit()
 IoUringCqe IoUring::PeekCqe()
 {
     io_uring_cqe* cqe;
-    int ret = io_uring_peek_cqe(&ring_, &cqe);
+    int ret = io_uring_peek_cqe(ring_, &cqe);
 
     if (ret < 0) {
         const char* what = "io_uring_wait_cqe() failed";
@@ -92,13 +95,15 @@ IoUringCqe IoUring::PeekCqe()
 std::optional<IoUringCqe> IoUring::WaitCqe()
 {
     io_uring_cqe* cqe;
-    int ret = io_uring_wait_cqe(&ring_, &cqe);
+    int ret = io_uring_wait_cqe(ring_, &cqe);
     if (ret < 0) {
         return {};
     }
 
     return IoUringCqe(cqe);
 }
+
+void IoUring::SeenCqe(const IoUringCqe& cqe) { io_uring_cqe_seen(ring_, cqe.cqe_); }
 
 IoUring& Threadlocal_ring()
 {

@@ -1,11 +1,11 @@
-#ifndef __URING_IO_URING_CQE__
-#define __URING_IO_URING_CQE__
-#include "liburing.h"
+#ifndef __LIBURING_CPP_IO_URING_CQE__
+#define __LIBURING_CPP_IO_URING_CQE__
+#include <linux/types.h>
 
 class IoUringCqe {
     friend class IoUring;
-    io_uring_cqe* cqe_;
-    explicit IoUringCqe(io_uring_cqe* cqe) : cqe_{cqe} {}
+    struct io_uring_cqe* cqe_;
+    explicit IoUringCqe(struct io_uring_cqe* cqe) : cqe_{cqe} {}
 
 public:
     IoUringCqe() = delete;
@@ -17,11 +17,9 @@ public:
     IoUringCqe(IoUringCqe&&) noexcept = default;
     IoUringCqe& operator=(IoUringCqe&&) noexcept = default;
 
-    [[nodiscard]] __s32 Res() const { return cqe_->res; }
-
-    [[nodiscard]] __u32 Flags() const { return cqe_->flags; }
-
-    [[nodiscard]] __u64 GetData64() const { return io_uring_cqe_get_data64(cqe_); }
+    [[nodiscard]] __s32 Res() const;
+    [[nodiscard]] __u32 Flags() const;
+    [[nodiscard]] __u64 GetData64() const;
 };
 
-#endif /* __URING_IO_URING_CQE__ */
+#endif /* __LIBURING_CPP_IO_URING_CQE__ */

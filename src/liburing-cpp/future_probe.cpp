@@ -1,7 +1,7 @@
 
 #include <liburing.h>
 #include <liburing/io_uring.h>
-#include "liburing-cpp/future_probe.h"
+#include "future_probe.h"
 
 #include <iostream>
 #include <magic_enum.hpp>

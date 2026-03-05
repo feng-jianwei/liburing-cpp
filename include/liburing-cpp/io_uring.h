@@ -5,7 +5,6 @@
 
 #include "io_uring_cqe.h"
 #include "io_uring_sqe.h"
-#include "liburing.h"
 
 class IoBufferRing {
 public:
@@ -16,7 +15,7 @@ public:
 };
 
 class IoUring {
-    io_uring ring_{};
+    struct io_uring *ring_{};
     using gid = int;
     std::unordered_map<gid, IoBufferRing> gidToBuffer;
 
@@ -41,7 +40,7 @@ public:
 
     std::optional<IoUringCqe> WaitCqe();
 
-    void SeenCqe(const IoUringCqe& cqe) { io_uring_cqe_seen(&ring_, cqe.cqe_); }
+    void SeenCqe(const IoUringCqe& cqe);
 };
 
 IoUring& Threadlocal_ring();
