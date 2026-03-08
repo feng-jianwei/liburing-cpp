@@ -4,23 +4,26 @@
 #include <liburing/io_uring.h>
 #include <sys/mman.h>
 
-#include <atomic>
-#include <new>
+#include <mutex>
 #include <system_error>
 
 unsigned int ringfd(0);
+std::mutex mtx;
 
 IoUring::IoUring(unsigned int entries)
 {
     ring_ = new io_uring{};
     struct io_uring_params p{};
-
+    
+    std::unique_lock ringFdMtx(mtx);
     if (ringfd != 0) {
         p.flags |= IORING_SETUP_ATTACH_WQ;
         p.wq_fd = ringfd;
     }
     int ret = io_uring_queue_init_params(entries, ring_, &p);
     ringfd = ring_->ring_fd;
+    ringFdMtx.unlock();
+
     if (ret < 0) {
         const char* what = "io_uring_queue_init() failed";
         throw std::system_error(-ret, std::generic_category(), what);
