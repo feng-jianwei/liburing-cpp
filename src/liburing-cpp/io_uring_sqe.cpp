@@ -19,9 +19,9 @@ void IoUringSqe::prep_read(int fd, void* buf, unsigned int nbytes, __u64 offset)
 {
     io_uring_prep_read(sqe_, fd, buf, nbytes, offset);
 }
-void IoUringSqe::prep_write(int fd, void* buf, unsigned int nbytes, int flags)
+void IoUringSqe::prep_write(int fd, void* buf, unsigned int nbytes, __u64 offset)
 {
-    io_uring_prep_write(sqe_, fd, buf, nbytes, flags);
+    io_uring_prep_write(sqe_, fd, buf, nbytes, offset);
 }
 
 void IoUringSqe::prep_send(int sockfd, void* buf, size_t len, int flags)

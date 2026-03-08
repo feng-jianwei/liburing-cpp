@@ -1,6 +1,8 @@
 #ifndef __HELPER_WRITER__
 #define __HELPER_WRITER__
 
+#include <liburing/io_uring.h>
+
 #include <coroutine>
 #include <string>
 
@@ -20,10 +22,11 @@ public:
     }
 
 public:
-    Writer(int fd, string&& str)
+    Writer(int fd, string&& str, __u64 offset = 0)
     {
         auto sqe = Threadlocal_ring().GetSqe();
-        sqe.prep_write(fd, (void*) str.data(), str.length(), 0);
+        sqe.prep_write(fd, (void*) str.data(), str.length(), offset);
+        sqe.set_flags(IOSQE_ASYNC);
         sqe.set_Data64(std::bit_cast<__u64>(this));
     };
 

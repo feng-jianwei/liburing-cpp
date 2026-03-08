@@ -31,13 +31,12 @@ public:
 
     void prep_read(int fd, void* buf, unsigned int nbytes, __u64 offset);
 
-    void prep_write(int fd, void* buf, unsigned int nbytes, int flags);
+    void prep_write(int fd, void* buf, unsigned int nbytes, __u64 offset);
 
     void prep_send(int sockfd, void* buf, size_t len, int flags);
     void prep_recv(int sockfd, void* buf, size_t len, int flags);
     void pre_poll_add(int fd, unsigned int poll_mask);
     void pre_bind(int fd, const struct sockaddr* addr, socklen_t addrlen);
-
     void pre_listen(int fd, int backlog);
 };
 

@@ -3,6 +3,7 @@
 
 #include <coroutine>
 #include <string>
+#include <liburing/io_uring.h>
 
 #include "liburing-cpp/io_uring_callback.h"
 
@@ -19,10 +20,11 @@ class Reader : public UringCallBack {
     }
 
 public:
-    Reader(int fd)
+    explicit Reader(int fd, __u64 offset = 0)
     {
         auto sqe = Threadlocal_ring().GetSqe();
-        sqe.prep_read(fd, str.get(), 1024, 0);
+        sqe.prep_read(fd, str.get(), 1024, offset);
+        sqe.set_flags(IOSQE_ASYNC);
         sqe.set_Data64(std::bit_cast<__u64>(this));
     };
 

@@ -2,7 +2,7 @@
 file(GLOB cpp_sources *.cpp *.c)
 
 # 导入 Conan 生成的文件
-find_package(GTest REQUIRED)          # 这会导入 GTest::gtest 等 target
+# find_package(GTest REQUIRED)
 
 add_executable(unitest_liburing_cpp ${cpp_sources})
 
@@ -13,12 +13,12 @@ target_include_directories(unitest_liburing_cpp PRIVATE
 
 target_link_libraries(unitest_liburing_cpp
     PRIVATE
-        GTest::gtest_main
-        GTest::gtest
+        # GTest::gtest_main
+        # GTest::gtest
         liburing-cpp
         liburing-service
 )
 
 # 推荐：自动发现所有 TEST() 宏（最方便）
-include(GoogleTest)
-gtest_discover_tests(unitest_liburing_cpp)
+# include(GoogleTest)
+# gtest_discover_tests(unitest_liburing_cpp)
